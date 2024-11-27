@@ -4,4 +4,5 @@ project(continue_analysis)
 set(CMAKE_CXX_STANDARD 14)
 
 add_executable(continue_analysis
-    main.cpp)
+    main.cpp
+        test.cpp)

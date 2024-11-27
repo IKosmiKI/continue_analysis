@@ -3,6 +3,8 @@
 #include <iostream>
 #include <vector>
 #include <stack>
+#include <regex>
+using namespace std;
 
 enum class Token {
     Continue,
@@ -11,17 +13,30 @@ enum class Token {
     Identifier,
     EndOfFile,
     Unknown,
-    Whitespace
+    Whitespace,
+    Semicolon,
+    Do
 };
+
+void continue_analysis(stack<Token> stack) {
+    string str;
+    const regex invalidPattern(R"((^|\s)continue\s*=|=\s*continue(\s|;|$))");
+    const regex validPattern(R"((;)(^|\s)continue\s*;|\)\s*continue(\s*;)|\)\s*\{\s*.*(;)\s*continue(\s*;))");
+    while (stack.top() != Token::While || stack.top() != Token::For) {
+        str = stack.top() + str;
+        if (regex_match(str, invalidPattern)) cerr << "Error: Invalid Continue Using" << endl;
+        else if (regex_match(str, validPattern)) cout << "Valid Continue Using" << endl;
+    };
+}
 
 struct TokenInfo {
     Token type;
-    std::string value;
+    string value;
 };
 
 class Lexer {
 public:
-    Lexer(const std::string& input) : input(input), pos(0) {}
+    Lexer(const string& input) : input(input), pos(0) {}
 
     TokenInfo nextToken() {
         // Пропускаем пробелы
@@ -38,6 +53,16 @@ public:
         if (input.substr(pos, 8) == "continue") {
             pos += 8; // увеличиваем позицию на длину слова "continue"
             return {Token::Continue, "continue"};
+        }
+
+        if (input.substr(pos, 1) == ";") {
+            pos += 8; // увеличиваем позицию на длину слова "continue"
+            return {Token::Semicolon, ";"};
+        }
+
+        if (input.substr(pos, 2) == "do") {
+            pos += 8; // увеличиваем позицию на длину слова "continue"
+            return {Token::Do, "do"};
         }
 
         // Проверяем на ключевое слово "while"
@@ -62,11 +87,11 @@ public:
         }
 
         // Если токен не распознан
-        return {Token::Unknown, std::string(1, input[pos++])};
+        return {Token::Unknown, string(1, input[pos++])};
     }
 
 private:
-    std::string input;
+    string input;
     size_t pos;
 };
 
@@ -76,29 +101,29 @@ public:
 
     void parse() {
         TokenInfo token;
-        std::stack<Token> loopStack;
+        stack<Token> loopStack;
 
         do {
             token = lexer.nextToken();
             switch (token.type) {
-                case Token::While:
-                case Token::For:
-                    loopStack.push(token.type);
-                    break;
-                case Token::Continue:
-                    if (loopStack.empty()) {
-                        std::cerr << "Error: 'continue' used outside of a loop." << std::endl;
-                    } else {
-                        std::cout << "Valid 'continue' found." << std::endl;
+                case Token::Semicolon:
+                    if (loopStack.top() == Token::Continue) {
+                        loopStack.push(token.type);
+                        continue_analysis(loopStack);
                     }
                     break;
-                case Token::EndOfFile:
+                case Token::While:
+                case Token::For:
+                case Token::Do:
+                case Token::Continue:
+                    loopStack.push(token.type);
                     break;
+                case Token::EndOfFile:
                 case Token::Identifier:
                     // Обработка идентификаторов
                     break;
                 case Token::Unknown:
-                    std::cerr << "Error: Unknown token '" << token.value << "'." << std::endl;
+                    cerr << "Error: Unknown token '" << token.value << "'." << endl;
                     break;
                 case Token::Whitespace:
                     // Игнорируем пробелы
@@ -112,8 +137,8 @@ private:
 };
 
 int main() {
-    std::string input = "while (true) { continue; }"; // Пример корректного использования
-    // std::string input = "int main() { continue; }"; // Пример некорректного использования
+    string input = "while (true) { continue; }"; // Пример корректного использования
+    // string input = "int main() { continue; }"; // Пример некорректного использования
     Lexer lexer(input);
     Parser parser(lexer);
     parser.parse();
