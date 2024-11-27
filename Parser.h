@@ -1,16 +1,13 @@
 #ifndef PARSER_H
 #define PARSER_H
-#include "tokeninfo.h"
-#include <string>
-#include <cctype>
-#include <iostream>
-#include <vector>
 #include <stack>
-#include <regex>
+#include "Lexer.h"
+
 using namespace std;
 
 
 class Parser {
+public:
     Parser(Lexer& lexer);
 
     void parse();

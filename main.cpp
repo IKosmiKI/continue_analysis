@@ -1,11 +1,7 @@
 #include <string>
-#include <cctype>
-#include <iostream>
-#include <vector>
-#include <stack>
 #include <regex>
-#include "Lexer.cpp"
-#include "Parser.cpp"
+#include "Lexer.h"
+#include "Parser.h"
 using namespace std;
 
 int main() {

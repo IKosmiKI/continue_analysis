@@ -1,4 +1,5 @@
 #include "Parser.h"
+#include <iostream>
 Parser::Parser(Lexer& lexer) : lexer(lexer) {}
 void Parser::parse() {
     TokenInfo token;
@@ -36,9 +37,10 @@ void Parser::continue_analysis(stack<TokenInfo> stack) {
     string str;
     // const regex invalidPattern(R"((^|\s)continue\s*=|=\s*continue(\s|;|$))");
     const regex validPattern(R"((;)(^|\s)continue\s*;|\)\s*continue(\s*;)|\)\s*\{\s*.*(;)\s*continue(\s*;))");
-    while (stack.top().type != Token::While || stack.top().type != Token::For) {
+    while (!stack.empty()) {
         str = stack.top().value + str;
-        if (regex_match(str, validPattern)) cout << "Valid Continue Using" << endl;
-        else cerr << "Error: Invalid Continue Using" << endl;
+        stack.pop();
     };
+    if (regex_match(str, validPattern)) cout << "Valid Continue Using" << endl;
+    else cerr << "Error: Invalid Continue Using" << endl;
 }
