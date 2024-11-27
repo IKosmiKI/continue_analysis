@@ -18,21 +18,22 @@ enum class Token {
     Do
 };
 
-void continue_analysis(stack<Token> stack) {
+struct TokenInfo {
+    Token type;
+    string value;
+};
+
+void continue_analysis(stack<TokenInfo> stack) {
     string str;
     const regex invalidPattern(R"((^|\s)continue\s*=|=\s*continue(\s|;|$))");
     const regex validPattern(R"((;)(^|\s)continue\s*;|\)\s*continue(\s*;)|\)\s*\{\s*.*(;)\s*continue(\s*;))");
-    while (stack.top() != Token::While || stack.top() != Token::For) {
-        str = stack.top() + str;
+    while (stack.top().type != Token::While || stack.top().type != Token::For) {
+        str = stack.top().value + str;
         if (regex_match(str, invalidPattern)) cerr << "Error: Invalid Continue Using" << endl;
         else if (regex_match(str, validPattern)) cout << "Valid Continue Using" << endl;
     };
 }
 
-struct TokenInfo {
-    Token type;
-    string value;
-};
 
 class Lexer {
 public:
@@ -101,14 +102,14 @@ public:
 
     void parse() {
         TokenInfo token;
-        stack<Token> loopStack;
+        stack<TokenInfo> loopStack;
 
         do {
             token = lexer.nextToken();
             switch (token.type) {
                 case Token::Semicolon:
-                    if (loopStack.top() == Token::Continue) {
-                        loopStack.push(token.type);
+                    if (loopStack.top().type == Token::Continue) {
+                        loopStack.push(token);
                         continue_analysis(loopStack);
                     }
                     break;
@@ -116,7 +117,7 @@ public:
                 case Token::For:
                 case Token::Do:
                 case Token::Continue:
-                    loopStack.push(token.type);
+                    loopStack.push(token);
                     break;
                 case Token::EndOfFile:
                 case Token::Identifier:
