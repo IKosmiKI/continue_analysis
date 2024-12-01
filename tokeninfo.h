@@ -10,8 +10,11 @@ enum class Token {
     Whitespace,
     Semicolon,
     Do,
+    LParen,
+    RParen,
     LBracer,
     RBracer,
+    Equal,
 
 };
 struct TokenInfo {

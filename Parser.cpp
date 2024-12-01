@@ -17,6 +17,11 @@ void Parser::parse() {
             case Token::While:
             case Token::For:
             case Token::Do:
+            case Token::LParen:
+            case Token::RParen:
+            case Token::LBracer:
+            case Token::RBracer:
+            case Token::Equal:
             case Token::Continue:
                 loopStack.push(token);
             break;
@@ -36,11 +41,11 @@ void Parser::parse() {
 void Parser::continue_analysis(stack<TokenInfo> stack) {
     string str;
     // const regex invalidPattern(R"((^|\s)continue\s*=|=\s*continue(\s|;|$))");
-    const regex validPattern(R"((;)(^|\s)continue\s*;|\)\s*continue(\s*;)|\)\s*\{\s*.*(;)\s*continue(\s*;))");
+    const regex validPattern(R"((while\s*\(.*|for\s*\(.*|do\s*\(.*)(\).*(;)(^|\s)continue\s*;|\)\s*continue(\s*;)|\)\s*\{*\s*.*(;)\s*continue(\s*;)|\)\s*\{*\s*continue(\s*;)))");
     while (!stack.empty()) {
         str = stack.top().value + str;
         stack.pop();
     };
-    if (regex_match(str, validPattern)) cout << "Valid Continue Using" << endl;
+    if (regex_search(str, validPattern)) cout << "Valid Continue Using" << endl;
     else cerr << "Error: Invalid Continue Using" << endl;
 }
