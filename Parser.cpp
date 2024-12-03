@@ -9,11 +9,22 @@ void Parser::parse() {
         token = lexer.nextToken();
         switch (token.type) {
             case Token::Semicolon:
-                if (loopStack.top().type == Token::Continue) {
-                    loopStack.push(token);
+                // if (loopStack.top().type == Token::Continue) {
+                //     loopStack.push(token);
+                //     continue_analysis(loopStack);
+                // }
+                // else loopStack.push(token);
+                loopStack.push(token);
+            break;
+            case Token::Continue:
+                loopStack.push(token);
+                token = lexer.nextToken();
+                if (token.type!=Token::Unknown) loopStack.push(token);
+                if (token.type == Token::Semicolon) {
                     continue_analysis(loopStack);
                 }
-            break;
+                else cerr << "Error: Invalid Continue Using" << endl;
+                break;
             case Token::While:
             case Token::For:
             case Token::Do:
@@ -22,8 +33,8 @@ void Parser::parse() {
             case Token::LBracer:
             case Token::RBracer:
             case Token::Equal:
-            case Token::Continue:
-                loopStack.push(token);
+            // case Token::Continue:
+                 loopStack.push(token);
             break;
             case Token::EndOfFile:
             case Token::Identifier:
